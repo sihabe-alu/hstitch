@@ -68,3 +68,16 @@ def test_empty_raises_value_error():
 
 def test_large_photos_are_not_rejected_as_decompression_bombs():
     assert Image.MAX_IMAGE_PIXELS is None
+
+
+def test_fit_scales_smaller_images_up_keeping_aspect_ratio():
+    out = open_result(stitch([make((300, 200), (255, 0, 0)), make((100, 500), (0, 0, 255))], fit=True)).convert("RGB")
+    assert out.size == (850, 500)  # red 300x200 -> 750x500
+    assert out.getpixel((0, 0)) == (255, 0, 0)
+    assert out.getpixel((749, 499)) == (255, 0, 0)
+    assert out.getpixel((750, 0)) == (0, 0, 255)
+
+
+def test_fit_leaves_equal_heights_untouched():
+    out = open_result(stitch([make((30, 20), "red"), make((10, 20), "blue")], fit=True))
+    assert out.size == (40, 20)

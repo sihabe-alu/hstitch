@@ -52,3 +52,13 @@ def test_truncated_upload_is_400():
     data = png((200, 200), "red").getvalue()
     r = post(app.test_client(), [io.BytesIO(data[: len(data) // 2])])
     assert r.status_code == 400
+
+
+def test_fit_field_scales_to_tallest():
+    r = post(app.test_client(), [png((300, 200), "red"), png((100, 500), "blue")], fit="1")
+    assert Image.open(io.BytesIO(r.data)).size == (850, 500)
+
+
+def test_fit_is_off_by_default():
+    r = post(app.test_client(), [png((300, 200), "red"), png((100, 500), "blue")])
+    assert Image.open(io.BytesIO(r.data)).size == (400, 500)

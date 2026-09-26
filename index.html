@@ -5,7 +5,7 @@
 <title>hstitch</title>
 <style>
   body { font: 15px system-ui, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; }
-  #drop { border: 2px dashed #888; border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; }
+  #drop { border: 2px dashed #888; border-radius: 8px; min-height: 170px; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; }
   #drop.over { background: #eef; }
   #thumbs { display: flex; gap: 8px; margin: 12px 0; }
   .t { text-align: center; }
@@ -19,6 +19,7 @@
 <div class="bar">
   <label><input type="radio" name="fmt" value="png" checked> PNG (무손실)</label>
   <label><input type="radio" name="fmt" value="jpeg"> JPEG</label>
+  <label><input type="checkbox" id="fit"> 높이 맞춤 (작은 사진 확대)</label>
   <button id="go" disabled>이어붙이기</button>
   <a id="dl" hidden>다운로드</a>
   <span id="msg"></span>
@@ -57,6 +58,7 @@ $('go').onclick = async () => {
   const fd = new FormData();
   files.forEach(f => fd.append('images', f));
   fd.append('format', fmt);
+  if ($('fit').checked) fd.append('fit', '1');
   $('msg').textContent = '처리 중…';
   const r = await fetch('/stitch', { method: 'POST', body: fd });
   if (!r.ok) { $('msg').textContent = '오류: ' + await r.text(); return; }
