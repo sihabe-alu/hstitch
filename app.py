@@ -1,6 +1,9 @@
 import io
 
-from PIL import Image, ImageOps
+from flask import Flask, Response, request, send_file
+from PIL import Image, ImageOps, UnidentifiedImageError
+
+app = Flask(__name__)
 
 
 def stitch(files, fmt="png"):
@@ -22,3 +25,18 @@ def stitch(files, fmt="png"):
     else:
         canvas.save(out, "PNG", icc_profile=icc)
     return out.getvalue()
+
+
+@app.get("/")
+def index():
+    return send_file("index.html")
+
+
+@app.post("/stitch")
+def stitch_route():
+    fmt = "jpeg" if request.form.get("format") == "jpeg" else "png"
+    try:
+        data = stitch([f.stream for f in request.files.getlist("images")], fmt)
+    except (ValueError, UnidentifiedImageError) as e:
+        return Response(str(e), status=400, mimetype="text/plain")
+    return Response(data, mimetype=f"image/{fmt}")
