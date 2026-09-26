@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>hstitch</title>
+<style>
+  body { font: 15px system-ui, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; }
+  #drop { border: 2px dashed #888; border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; }
+  #drop.over { background: #eef; }
+  #thumbs { display: flex; gap: 8px; margin: 12px 0; }
+  .t { text-align: center; }
+  .t img { height: 80px; display: block; }
+  #out { max-width: 100%; margin-top: 16px; }
+  .bar { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+</style>
+<div id="drop">사진 2~3장을 끌어놓거나 클릭해서 선택</div>
+<input id="file" type="file" accept="image/*" multiple hidden>
+<div id="thumbs"></div>
+<div class="bar">
+  <label><input type="radio" name="fmt" value="png" checked> PNG (무손실)</label>
+  <label><input type="radio" name="fmt" value="jpeg"> JPEG</label>
+  <button id="go" disabled>이어붙이기</button>
+  <a id="dl" hidden>다운로드</a>
+  <span id="msg"></span>
+</div>
+<img id="out" alt="">
+<script>
+const $ = id => document.getElementById(id);
+let files = [];
+
+function render() {
+  $('thumbs').replaceChildren(...files.map((f, i) => {
+    const d = document.createElement('div'); d.className = 't';
+    const img = document.createElement('img'); img.src = URL.createObjectURL(f);
+    const l = document.createElement('button'); l.textContent = '←'; l.disabled = i === 0;
+    l.onclick = () => { [files[i-1], files[i]] = [files[i], files[i-1]]; render(); };
+    const r = document.createElement('button'); r.textContent = '→'; r.disabled = i === files.length - 1;
+    r.onclick = () => { [files[i+1], files[i]] = [files[i], files[i+1]]; render(); };
+    const x = document.createElement('button'); x.textContent = '×';
+    x.onclick = () => { files.splice(i, 1); render(); };
+    d.append(img, l, r, x);
+    return d;
+  }));
+  $('go').disabled = files.length === 0;
+}
+
+function add(list) { files.push(...[...list].filter(f => f.type.startsWith('image/'))); render(); }
+
+$('drop').onclick = () => $('file').click();
+$('file').onchange = e => { add(e.target.files); e.target.value = ''; };
+$('drop').ondragover = e => { e.preventDefault(); $('drop').classList.add('over'); };
+$('drop').ondragleave = () => $('drop').classList.remove('over');
+$('drop').ondrop = e => { e.preventDefault(); $('drop').classList.remove('over'); add(e.dataTransfer.files); };
+
+$('go').onclick = async () => {
+  const fmt = document.querySelector('input[name=fmt]:checked').value;
+  const fd = new FormData();
+  files.forEach(f => fd.append('images', f));
+  fd.append('format', fmt);
+  $('msg').textContent = '처리 중…';
+  const r = await fetch('/stitch', { method: 'POST', body: fd });
+  if (!r.ok) { $('msg').textContent = '오류: ' + await r.text(); return; }
+  const url = URL.createObjectURL(await r.blob());
+  $('out').src = url;
+  $('dl').href = url;
+  $('dl').download = 'stitched.' + (fmt === 'jpeg' ? 'jpg' : 'png');
+  $('dl').hidden = false;
+  $('msg').textContent = '';
+};
+</script>
+</html>
