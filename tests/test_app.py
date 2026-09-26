@@ -46,3 +46,9 @@ def test_corrupt_upload_is_400():
 def test_no_files_is_400():
     r = post(app.test_client(), [])
     assert r.status_code == 400
+
+
+def test_truncated_upload_is_400():
+    data = png((200, 200), "red").getvalue()
+    r = post(app.test_client(), [io.BytesIO(data[: len(data) // 2])])
+    assert r.status_code == 400

@@ -64,3 +64,7 @@ def test_corrupt_file_raises():
 def test_empty_raises_value_error():
     with pytest.raises(ValueError):
         stitch([])
+
+
+def test_large_photos_are_not_rejected_as_decompression_bombs():
+    assert Image.MAX_IMAGE_PIXELS is None

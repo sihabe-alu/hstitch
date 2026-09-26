@@ -1,7 +1,9 @@
 import io
 
 from flask import Flask, Response, request, send_file
-from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import Image, ImageOps
+
+Image.MAX_IMAGE_PIXELS = None
 
 app = Flask(__name__)
 
@@ -37,6 +39,6 @@ def stitch_route():
     fmt = "jpeg" if request.form.get("format") == "jpeg" else "png"
     try:
         data = stitch([f.stream for f in request.files.getlist("images")], fmt)
-    except (ValueError, UnidentifiedImageError) as e:
+    except (ValueError, OSError) as e:
         return Response(str(e), status=400, mimetype="text/plain")
     return Response(data, mimetype=f"image/{fmt}")
