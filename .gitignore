@@ -2,3 +2,5 @@
 __pycache__/
 .superpowers/
 .pytest_cache/
+.DS_Store
+.playwright-mcp/
