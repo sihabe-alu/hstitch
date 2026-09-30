@@ -4,16 +4,11 @@
 
 ## 접속 주소
 
-서버는 Tailscale IP에만 바인딩된다 (`run.sh` 참고). 같은 tailnet(`sihabe@`)에 로그인된 기기에서만 접속 가능하고, 공용 인터넷이나 같은 공유기(LAN)에서는 열리지 않는다.
+서버는 Tailscale IP에만 바인딩된다 (`run.sh` 참고). 같은 tailnet에 로그인된 기기에서만 접속 가능하고, 공용 인터넷이나 같은 공유기(LAN)에서는 열리지 않는다.
 
-| 방식 | 주소 |
-|------|------|
-| Tailscale IP | http://100.105.168.12:5050 |
-| MagicDNS | http://sialu-macmini.tail2086ee.ts.net:5050 |
-
+- 접속 주소는 `tailscale ip -4`로 확인한다. 포트는 5050이다 (`http://<Tailscale IP>:5050`).
 - 접속하는 기기(폰, 다른 PC 등)에 Tailscale 앱을 설치하고 같은 계정으로 로그인해야 한다.
 - 서버가 실행 중이어야 한다 (아래 실행 방법 참고).
-- Tailscale IP는 기기에 고정 할당되지만, 바뀌었다면 `tailscale ip -4`로 확인한다.
 
 ## 실행
 
@@ -61,7 +56,7 @@ python3 -m venv .venv
 
 ```sh
 curl -F images=@a.jpg -F images=@b.jpg -F format=png \
-  http://100.105.168.12:5050/stitch -o out.png
+  http://<Tailscale IP>:5050/stitch -o out.png
 ```
 
 ## 테스트
